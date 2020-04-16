@@ -282,6 +282,11 @@ enum class ReplicateTo : lcb_U16 {
     THREE = 3 //!< Wait for replication to three replicas
 };
 
+enum class Version: lcb_U16 {
+    V0 = 0,
+    V3 = 3
+};
+
 //! Options for durability constraints
 class DurabilityOptions : public lcb_durability_opts_t {
 public:
@@ -680,7 +685,10 @@ public:
     //! @brief Initialize the client
     //! @param connstr the connection string
     //! @param passwd the password for the bucket (if password protected)
-    inline Client(const std::string& connstr = "couchbase://localhost/default", const std::string& passwd = "", const std::string& username = "");
+    inline Client(const std::string& connstr = "couchbase://localhost/default",
+                  const std::string& passwd = "",
+                  const std::string& username = "",
+                  const Version = Version::V3);
     inline ~Client();
 
     inline GetResponse get(const GetCommand&);

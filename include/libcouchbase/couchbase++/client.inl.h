@@ -25,22 +25,56 @@ Client::_dispatch(int cbtype, const lcb_RESPBASE *r)
     }
 }
 
-Client::Client(const std::string& connstr, const std::string& passwd, const std::string& username)
+Client::Client(const std::string& connstr, const std::string& passwd,
+               const std::string& username, const Version v)
 : remaining(0), m_duropts(PersistTo::NONE, ReplicateTo::NONE)
 {
+
     lcb_create_st cropts;
-    cropts.version = 3;
-    cropts.v.v3.connstr = connstr.c_str();
-    if (!passwd.empty()) {
-        cropts.v.v3.passwd = passwd.c_str();
+
+    auto set_v0_opts = [&]  {
+        cropts.v.v0.host = connstr.c_str();
+
+        if (!username.empty()) {
+            cropts.v.v0.user = username.c_str();
+        }
+
+        if (!passwd.empty()) {
+            cropts.v.v0.passwd = passwd.c_str();
+        }
+    };
+
+    auto set_v3_opts = [&]  {
+        cropts.v.v3.connstr = connstr.c_str();
+
+        if (!username.empty()) {
+            cropts.v.v3.username = username.c_str();
+        }
+
+        if (!passwd.empty()) {
+            cropts.v.v3.passwd = passwd.c_str();
+        }
+    };
+
+
+    switch (v) {
+        case Version::V0:
+            set_v0_opts();
+            break;
+        case Version::V3:
+            set_v3_opts();
+            break;
+        default:
+            throw std::runtime_error{"Unknown version"};
     }
-    if (!username.empty()) {
-        cropts.v.v3.username = username.c_str();
-    }
+
+    cropts.version = static_cast<int>(v);
+
     Status rv = lcb_create(&m_instance, &cropts);
     if (rv != LCB_SUCCESS) {
         throw rv;
     }
+
     lcb_set_cookie(m_instance, this);
 }
 
