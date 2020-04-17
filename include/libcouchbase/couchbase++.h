@@ -686,6 +686,7 @@ public:
     //! @param connstr the connection string
     //! @param passwd the password for the bucket (if password protected)
     inline Client(const std::string& connstr = "couchbase://localhost/default",
+                  const std::string& bucket = "",
                   const std::string& passwd = "",
                   const std::string& username = "",
                   const Version = Version::V3);

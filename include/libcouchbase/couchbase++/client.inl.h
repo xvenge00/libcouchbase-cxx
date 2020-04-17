@@ -25,15 +25,18 @@ Client::_dispatch(int cbtype, const lcb_RESPBASE *r)
     }
 }
 
-Client::Client(const std::string& connstr, const std::string& passwd,
-               const std::string& username, const Version v)
+Client::Client(const std::string& host,
+               const std::string& bucket,
+               const std::string& passwd,
+               const std::string& username,
+               const Version v)
 : remaining(0), m_duropts(PersistTo::NONE, ReplicateTo::NONE)
 {
 
     lcb_create_st cropts;
 
     auto set_v0_opts = [&]  {
-        cropts.v.v0.host = connstr.c_str();
+        cropts.v.v0.host = host.c_str();
 
         if (!username.empty()) {
             cropts.v.v0.user = username.c_str();
@@ -42,9 +45,21 @@ Client::Client(const std::string& connstr, const std::string& passwd,
         if (!passwd.empty()) {
             cropts.v.v0.passwd = passwd.c_str();
         }
+
+        if (!bucket.empty()) {
+            cropts.v.v0.bucket = bucket.c_str();
+        }
     };
 
+    auto connstr = std::string{};
     auto set_v3_opts = [&]  {
+
+        if (!bucket.empty()) {
+            connstr = host + "/" + bucket;
+        } else {
+            connstr = host;
+        }
+
         cropts.v.v3.connstr = connstr.c_str();
 
         if (!username.empty()) {
@@ -58,6 +73,7 @@ Client::Client(const std::string& connstr, const std::string& passwd,
 
 
     switch (v) {
+        // TODO: add support for other versions
         case Version::V0:
             set_v0_opts();
             break;
