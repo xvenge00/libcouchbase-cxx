@@ -184,6 +184,13 @@ Client::stats(const std::string& key) {
     return resp;
 }
 
+PingResponse
+Client::ping(const PingCommand &cmd) {
+    PingResponse resp;
+    run(cmd, resp);
+    return resp;
+}
+
 UnlockResponse
 Client::unlock(const UnlockCommand& cmd) {
     UnlockResponse resp;
